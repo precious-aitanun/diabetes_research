@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { UserProfile } from './types';
 
@@ -17,11 +16,11 @@ export const IconTrash = () => <svg fill="none" viewBox="0 0 24 24" stroke="curr
 
 // --- UI COMPONENTS ---
 export const LoadingSpinner = () => (
-    <div className="loading-container">
-        <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="var(--primary-color)">
+    <div className="loading-container" role="status" aria-live="polite">
+        <svg width="48" height="48" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="var(--primary)">
             <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
             <path d="M10.72,19.9a8,8,0,0,1-6.5-9.79A7.77,7.77,0,0,1,10.4,4.16a8,8,0,0,1,9.49,6.52A1.54,1.54,0,0,0,21.38,12h.13a1.37,1.37,0,0,0,1.38-1.54,11,11,0,1,0-12.7,12.39A1.54,1.54,0,0,0,12,21.34h0A1.47,1.47,0,0,0,10.72,19.9Z">
-                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
             </path>
         </svg>
     </div>
@@ -34,7 +33,7 @@ export const Notification = ({ message, type, onClose }: { message: string, type
     }, [onClose]);
 
     return (
-        <div className={`notification ${type}`}>
+        <div className={`notification ${type}`} role="alert">
             {message}
         </div>
     );
@@ -42,11 +41,11 @@ export const Notification = ({ message, type, onClose }: { message: string, type
 
 export const Modal = ({ title, children, onClose, onConfirm, confirmText = "Confirm" }: { title: string, children: React.ReactNode, onClose: () => void, onConfirm?: () => void, confirmText?: string }) => {
     return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{title}</h2>
-                    <button onClick={onClose} className="close-btn">&times;</button>
+                    <button onClick={onClose} className="close-btn" aria-label="Close modal">&times;</button>
                 </div>
                 <div className="modal-body">
                     {children}
@@ -54,7 +53,7 @@ export const Modal = ({ title, children, onClose, onConfirm, confirmText = "Conf
                 {onConfirm && (
                     <div className="modal-actions">
                         <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-                        <button onClick={onConfirm} className="btn">{confirmText}</button>
+                        <button onClick={onConfirm} className="btn btn-primary">{confirmText}</button>
                     </div>
                 )}
             </div>
@@ -63,7 +62,7 @@ export const Modal = ({ title, children, onClose, onConfirm, confirmText = "Conf
 };
 
 export const ProgressBar = ({ currentStep, steps, onStepClick }: { currentStep: number, steps: string[], onStepClick: (stepIndex: number) => void }) => (
-    <div className="progress-bar">
+    <div className="progress-bar" role="navigation" aria-label="Form progress">
         {steps.map((step, index) => (
             <button
                 type="button"
@@ -97,32 +96,35 @@ export const Sidebar = ({ currentPage, userRole, isOpen, setIsOpen, onNavigate }
     };
 
     return (
-        <nav className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <nav className={`sidebar ${isOpen ? 'open' : ''}`} aria-label="Main Navigation">
             <div className="sidebar-header">
                 <span className="logo">NIDPO</span>
             </div>
-            {navLinks.filter(link => link.roles.includes(userRole)).map(link => (
-                <a
-                    key={link.name}
-                    className={`nav-item ${currentPage === link.page ? 'active' : ''}`}
-                    onClick={() => handleNav(link.page)}
-                >
-                    {link.icon}
-                    {link.name}
-                </a>
-            ))}
+            <div className="sidebar-links">
+                {navLinks.filter(link => link.roles.includes(userRole)).map(link => (
+                    <button
+                        key={link.name}
+                        className={`nav-item ${currentPage === link.page ? 'active' : ''}`}
+                        onClick={() => handleNav(link.page)}
+                        aria-current={currentPage === link.page ? 'page' : undefined}
+                    >
+                        {link.icon}
+                        <span>{link.name}</span>
+                    </button>
+                ))}
+            </div>
         </nav>
     );
 };
 
 export const Header = ({ currentUser, onLogout, onMenuClick }: { currentUser: UserProfile, onLogout: () => void, onMenuClick: () => void }) => {
     return (
-        <header className="header">
-            <button className="mobile-menu-btn" onClick={onMenuClick}>
+        <header className="header" role="banner">
+            <button className="mobile-menu-btn" onClick={onMenuClick} aria-label="Toggle Menu">
                 <IconMenu />
             </button>
             <div className="user-info">
-                <span>Welcome, {currentUser.name}</span>
+                <span>Welcome, <strong>{currentUser.name}</strong></span>
                 <button 
                     onClick={(e) => { e.preventDefault(); onLogout(); }} 
                     className="logout-btn" 

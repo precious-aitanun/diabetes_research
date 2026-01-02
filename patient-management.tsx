@@ -83,8 +83,7 @@ export function AddPatientPage({ showNotification, onPatientAdded, currentUser, 
         
         // Monitoring table is mandatory for final submission
         if (!validateMonitoringTable()) {
-            showNotification('Standard protocols require all 42 glucose readings (14 days x 3) for valid multicenter data.', 'error');
-            // If we are not on the monitoring step, move there
+            showNotification('Standard protocols require all 42 glucose readings for valid multicenter data.', 'error');
             const monitoringIdx = formStructure.findIndex(s => s.fields.some(f => f.type === 'monitoring_table'));
             if (monitoringIdx !== -1) setCurrentStep(monitoringIdx);
             return;
@@ -136,6 +135,8 @@ export function AddPatientPage({ showNotification, onPatientAdded, currentUser, 
                     </div>
                 ) : field.type === 'monitoring_table' ? (
                     <MonitoringTable formData={formData} handleInputChange={handleInputChange} />
+                ) : field.type === 'textarea' ? (
+                    <textarea value={formData[field.id] || ''} onChange={e => handleInputChange(field.id, e.target.value)} rows={3} placeholder={field.helpText} />
                 ) : (
                     <input 
                         type={field.type === 'number' ? 'number' : 'text'} 
@@ -169,10 +170,12 @@ export function AddPatientPage({ showNotification, onPatientAdded, currentUser, 
                     </div>
 
                     <div className="form-footer">
-                        <button type="button" className="btn btn-outline" onClick={handleSaveDraft} disabled={isSaving}>
-                            <IconSave /> {isSaving ? 'Syncing...' : 'Save Draft'}
-                        </button>
-                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <div className="footer-actions-left">
+                            <button type="button" className="btn btn-outline" onClick={handleSaveDraft} disabled={isSaving || !formData.serialNumber}>
+                                <IconSave /> {isSaving ? 'Syncing...' : 'Save Draft'}
+                            </button>
+                        </div>
+                        <div className="footer-actions-right">
                             <button type="button" className="btn btn-outline" disabled={currentStep === 0} onClick={() => setCurrentStep(s => s - 1)}>Back</button>
                             {currentStep < formStructure.length - 1 ? (
                                 <button type="button" className="btn btn-primary" onClick={() => setCurrentStep(s => s + 1)}>Save & Continue</button>
@@ -220,10 +223,12 @@ export function PatientsPage({ currentUser, onEditPatient, showNotification }: a
             return [...base, ...dynamic].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
 
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+        const csvContent = headers.join(',') + '\n' + rows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.setAttribute('href', encodeURI(csvContent));
-        link.setAttribute('download', `NIDPO_Registry_Export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `NIDPO_Registry_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -241,7 +246,7 @@ export function PatientsPage({ currentUser, onEditPatient, showNotification }: a
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                     <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Patient Registry</h1>
                     <p style={{ color: 'var(--text-muted)' }}>Standardized outcomes database across all centers.</p>

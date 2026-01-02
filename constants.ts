@@ -1,9 +1,8 @@
-
 import { FormSection } from './types';
 
 export const formStructure: FormSection[] = [
     {
-        title: 'Demographic Data',
+        title: 'Demographics',
         fields: [
             { id: 'centerId', label: 'Center ID', type: 'number', required: false },
             { id: 'serialNumber', label: 'Serial Number/Institutional Code', type: 'text', required: true },
@@ -20,7 +19,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Diabetes History',
+        title: 'Diabetes',
         fields: [
             { id: 'diabetesType', label: 'Type of diabetes', type: 'radio', options: ['Type 1', 'Type 2', 'Other'], required: true },
             { id: 'diabetesTypeOther', label: 'If Other, specify type', type: 'text', condition: (data) => data.diabetesType === 'Other' },
@@ -42,7 +41,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Admission Info',
+        title: 'Admission',
         fields: [
             { id: 'admissionDiagnosis', label: 'Admission diagnosis', type: 'checkbox', options: ['Infection', 'DKA', 'HHS', 'Cardiovascular event', 'Other'], required: true },
             { id: 'admissionDiagnosisOther', label: 'If Other, specify', type: 'text', condition: (data) => data.admissionDiagnosis?.includes('Other') },
@@ -53,7 +52,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Lab Findings',
+        title: 'Labs',
         fields: [
             { id: 'glucoseMeasurementMethod', label: 'How was the blood glucose measured?', type: 'radio', options: ['Glucometer', 'Laboratory', 'Both'], required: true },
             { id: 'bloodGlucoseAdmission', label: 'Blood glucose levels at admission (mg/dL or mmol/L)', type: 'text', required: true },
@@ -73,7 +72,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'ECG & Renal',
+        title: 'Vitals',
         fields: [
             { id: 'ecgHeartRate', label: 'Heart Rate', type: 'text', required: true, helpText: "ECG" },
             { id: 'ecgLvh', label: 'LVH (Left Ventricular Hypertrophy)', type: 'radio', options: ['Yes', 'No'], required: true },
@@ -98,7 +97,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'In-Hospital Monitoring',
+        title: 'Monitoring',
         description: 'Capillary Blood Glucose Readings (Day 1 to Day 14)',
         fields: [
             { id: 'glucoseMonitoring', label: 'Daily Glucose Readings', type: 'monitoring_table', required: true },
@@ -109,7 +108,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Complications & Interventions',
+        title: 'Outcomes',
         fields: [
             { id: 'complicationInfections', label: 'Infections', type: 'checkbox', options: ['Sepsis', 'Pneumonia', 'Urinary tract infections', 'Other infections'], required: true, helpText: "New-onset Complications" },
             { id: 'complicationInfectionsOther', label: 'If Other infections, specify', type: 'text', condition: (data) => data.complicationInfections?.includes('Other infections') },
@@ -128,7 +127,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Discharge & Resources',
+        title: 'Discharge',
         fields: [
             { id: 'dischargeStayLength', label: 'Length of hospital stay (days)', type: 'number', required: true, helpText: "Discharge Information" },
             { id: 'dischargeStatus', label: 'Discharge status', type: 'radio', options: ['Recovery', 'Transfer', 'Death'], required: true },
@@ -136,7 +135,7 @@ export const formStructure: FormSection[] = [
             { id: 'dischargeFollowUp', label: 'Follow-up recommendations', type: 'radio', options: ['Yes', 'No'], required: true },
             { id: 'dischargeCauseOfDeath', label: 'If death, cause of death', type: 'text', condition: (data) => data.dischargeStatus === 'Death' },
             { id: 'additionalTotalAdmitted', label: 'Total number of patients admitted into medical wards within the study period', type: 'number', required: true, helpText: "Additional Information" },
-            { id: 'resourceEndocrinologist', label: 'Endocrinologist', type: 'radio', options: ['Yes', 'No'], required: true, helpText: "Resources Available in the Hospital" },
+            { id: 'resourceEndocridologist', label: 'Endocridologist', type: 'radio', options: ['Yes', 'No'], required: true, helpText: "Resources Available in the Hospital" },
             { id: 'resourceRegistrar', label: 'Senior registrar in EDM', type: 'radio', options: ['Yes', 'No'], required: true },
             { id: 'resourceDiabeticNurse', label: 'Diabetic nurse', type: 'radio', options: ['Yes', 'No'], required: true },
             { id: 'resourceOrthoSurgeon', label: 'Orthopaedic surgeon', type: 'radio', options: ['Yes', 'No'], required: true },
@@ -148,7 +147,7 @@ export const formStructure: FormSection[] = [
         ],
     },
     {
-        title: 'Cost Analysis',
+        title: 'Costs',
         fields: [
             { id: 'costPatientLocation', label: 'Where is the patient managed?', type: 'checkbox', options: ['Emergency Unit', 'General Ward', 'ICU/HDU', 'Isolation Ward'], required: true },
             { id: 'costBedDaysEU', label: 'Bed-days: Emergency Unit', type: 'number', required: true, helpText: "Put 0 if not applicable" },

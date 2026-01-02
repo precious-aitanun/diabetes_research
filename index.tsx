@@ -213,7 +213,8 @@ function App() {
         }
     };
 
-    const urlParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+    const hashParts = window.location.hash.split('?');
+    const urlParams = new URLSearchParams(hashParts.length > 1 ? hashParts[1] : '');
     const token = urlParams.get('token');
 
     if (loading) return <LoadingSpinner />;
@@ -228,7 +229,7 @@ function App() {
                     <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
                         <div className="auth-card" onClick={e => e.stopPropagation()}>
                             <button className="auth-close" onClick={() => setShowAuthOverlay(false)}>&times;</button>
-                            <AuthPage hasAdmin={true} onAdminCreated={() => showNotification('Lead Admin verification sent.', 'success')} />
+                            <AuthPage hasAdmin={true} onAdminCreated={() => showNotification('Lead Admin account created. Please verify your email.', 'success')} />
                         </div>
                     </div>
                 )}
@@ -249,4 +250,7 @@ function App() {
     );
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(<React.StrictMode><App /></React.StrictMode>);
+}

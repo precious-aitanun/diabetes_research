@@ -130,33 +130,35 @@ export function PatientsPage({ currentUser, onEditPatient }: any) {
                 <p style={{ color: 'var(--text-muted)' }}>Standardized outcomes database across all centers.</p>
             </div>
             <div className="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Patient ID</th>
-                            <th>Bio Data</th>
-                            <th>Institution</th>
-                            <th>Registration Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {patients.map(p => (
-                            <tr key={p.id}>
-                                <td style={{ fontWeight: 800, color: 'var(--secondary)' }}>{p.patientId}</td>
-                                <td style={{ fontSize: '0.85rem' }}>{p.age}Y • {p.sex}</td>
-                                <td>{p.centers?.name}</td>
-                                <td style={{ color: 'var(--text-muted)' }}>{new Date(p.dateAdded).toLocaleDateString()}</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button className="btn-icon" title="Edit Patient" onClick={() => onEditPatient(p)}><IconEdit /></button>
-                                        <button className="btn-icon" title="Delete Entry" style={{ color: '#ef4444' }}><IconTrash /></button>
-                                    </div>
-                                </td>
+                <div className="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Bio Data</th>
+                                <th>Institution</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {patients.map(p => (
+                                <tr key={p.id}>
+                                    <td style={{ fontWeight: 800, color: 'var(--secondary)' }}>{p.patientId}</td>
+                                    <td style={{ fontSize: '0.85rem' }}>{p.age}Y • {p.sex}</td>
+                                    <td>{p.centers?.name}</td>
+                                    <td style={{ color: 'var(--text-muted)' }}>{new Date(p.dateAdded).toLocaleDateString()}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn-icon" title="Edit Patient" onClick={() => onEditPatient(p)}><IconEdit /></button>
+                                            <button className="btn-icon" title="Delete Entry" style={{ color: '#ef4444' }}><IconTrash /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

@@ -35,37 +35,39 @@ export function UsersPage({ showNotification }: any) {
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{users.length} Active Research Staff</span>
                     <button className="btn btn-primary"><IconPlus /> Invite Staff</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Research Center</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(u => (
-                            <tr key={u.id}>
-                                <td style={{ fontWeight: 700 }}>{u.name}</td>
-                                <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
-                                <td>
-                                    <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>
-                                        {u.role.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td>{u.centers?.name || 'Administrative'}</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button className="btn-icon" title="Edit Staff"><IconEdit /></button>
-                                        <button className="btn-icon" title="Remove Access" style={{ color: '#ef4444' }}><IconTrash /></button>
-                                    </div>
-                                </td>
+                <div className="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Research Center</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map(u => (
+                                <tr key={u.id}>
+                                    <td style={{ fontWeight: 700 }}>{u.name}</td>
+                                    <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
+                                    <td>
+                                        <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>
+                                            {u.role.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>{u.centers?.name || 'Administrative'}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn-icon" title="Edit Staff"><IconEdit /></button>
+                                            <button className="btn-icon" title="Remove Access" style={{ color: '#ef4444' }}><IconTrash /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
@@ -98,31 +100,33 @@ export function CentersPage({ showNotification }: any) {
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{centers.length} Verified Institutions</span>
                     <button className="btn btn-primary"><IconPlus /> Add Center</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Institution Name</th>
-                            <th>Location / State</th>
-                            <th>Registry Volume</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {centers.map(c => (
-                            <tr key={c.id}>
-                                <td style={{ fontWeight: 700 }}>{c.name}</td>
-                                <td>{c.location}</td>
-                                <td style={{ color: 'var(--text-muted)' }}>0</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button className="btn-icon" title="Edit Center"><IconEdit /></button>
-                                        <button className="btn-icon" title="Delete Center" style={{ color: '#ef4444' }}><IconTrash /></button>
-                                    </div>
-                                </td>
+                <div className="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Institution Name</th>
+                                <th>Location / State</th>
+                                <th>Registry Volume</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {centers.map(c => (
+                                <tr key={c.id}>
+                                    <td style={{ fontWeight: 700 }}>{c.name}</td>
+                                    <td>{c.location}</td>
+                                    <td style={{ color: 'var(--text-muted)' }}>0</td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn-icon" title="Edit Center"><IconEdit /></button>
+                                            <button className="btn-icon" title="Delete Center" style={{ color: '#ef4444' }}><IconTrash /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

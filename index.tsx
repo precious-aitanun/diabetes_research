@@ -75,25 +75,25 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
                 </div>
             </section>
 
-            <section id="pi" className="section-container pi-section">
-                <div className="pi-image-placeholder">
+            <section id="pi" className="section-container pi-section" style={{ background: 'var(--secondary)', color: 'white', display: 'flex', gap: '4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="pi-image-placeholder" style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ fontSize: '3rem' }}>🔬</span>
                 </div>
-                <div className="pi-content">
-                    <span className="pi-badge">Principal Investigator</span>
+                <div className="pi-content" style={{ flex: 1, minWidth: '300px' }}>
+                    <span className="pi-badge" style={{ background: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800, marginBottom: '1rem', display: 'inline-block' }}>Principal Investigator</span>
                     <h2>Dr. Orebowale Oreboka Olugbemide</h2>
-                    <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.85 }}>
+                    <p style={{ fontSize: '1.1rem', marginBottom: '2rem', opacity: 0.85, maxWidth: '600px' }}>
                         Consultant Endocrinologist at Irrua Specialist Teaching Hospital (ISTH). 
                         Leading the digital transformation of diabetes research in West Africa through standardized registries.
                     </p>
                     <div style={{ display: 'flex', gap: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2.5rem' }}>
                         <div>
                             <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>ISTH</div>
-                            <div style={{ opacity: 0.6, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Hospital</div>
+                            <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Hospital</div>
                         </div>
                         <div>
                             <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>14+</div>
-                            <div style={{ opacity: 0.6, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Research Sites</div>
+                            <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Research Sites</div>
                         </div>
                     </div>
                 </div>
@@ -116,15 +116,15 @@ const DashboardPage = ({ stats }: { stats: any }) => (
             <p style={{ color: 'var(--text-muted)' }}>Global summary of clinical registry metrics.</p>
         </div>
         <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Total Patients</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.patients}</div>
             </div>
-            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Active Centers</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.centers}</div>
             </div>
-            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Network Size</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.users}</div>
             </div>
@@ -217,11 +217,11 @@ function App() {
                 <LandingPage onLoginClick={() => setShowAuthOverlay(true)} isLoggedIn={!!session} />
                 
                 {showAuthOverlay && (
-                    <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-                        <div style={{ background: 'white', width: '100%', maxWidth: '440px', padding: '3rem', borderRadius: '12px', position: 'relative' }} onClick={e => e.stopPropagation()}>
+                    <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
+                        <div className="auth-card" onClick={e => e.stopPropagation()}>
                             <button 
+                                className="auth-close"
                                 onClick={() => setShowAuthOverlay(false)} 
-                                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', opacity: 0.5 }}
                             >
                                 &times;
                             </button>

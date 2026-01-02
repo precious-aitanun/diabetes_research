@@ -56,13 +56,19 @@ export const Modal = ({ title, children, onClose }: { title: string, children: R
 );
 
 export const ProgressBar = ({ currentStep, steps, onStepClick }: { currentStep: number, steps: string[], onStepClick: (i: number) => void }) => (
-    <div className="progress-bar">
-        {steps.map((step, index) => (
-            <button key={index} className={`progress-step ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`} onClick={() => onStepClick(index)}>
-                <div className="step-number">{index < currentStep ? '✓' : index + 1}</div>
-                <div className="step-label">{step.split(' ')[0]}</div>
-            </button>
-        ))}
+    <div className="progress-container">
+        <div className="progress-bar">
+            {steps.map((step, index) => (
+                <button 
+                    key={index} 
+                    className={`progress-step ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`} 
+                    onClick={() => onStepClick(index)}
+                >
+                    <div className="step-number">{index < currentStep ? '✓' : index + 1}</div>
+                    <div className="step-label">{step.split(' ')[0]}</div>
+                </button>
+            ))}
+        </div>
     </div>
 );
 
@@ -91,16 +97,16 @@ export const Sidebar = ({ currentPage, userRole, isOpen, setIsOpen, onNavigate }
 
 export const Header = ({ currentUser, onLogout, onMenuClick }: any) => (
     <header className="header">
-        <button className="btn mobile-toggle" onClick={onMenuClick} style={{ border: 'none', background: 'none', padding: '0.5rem' }}>
+        <button className="mobile-toggle" onClick={onMenuClick}>
             <IconMenu />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--secondary)' }}>{currentUser.name}</div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{currentUser.role}</div>
             </div>
             <button className="btn btn-danger" onClick={onLogout} style={{ padding: '0.5rem 0.8rem' }}>
-                <IconLogout /> <span style={{ marginLeft: '4px' }}>Sign Out</span>
+                <IconLogout /> <span className="hide-mobile">Sign Out</span>
             </button>
         </div>
     </header>

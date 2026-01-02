@@ -158,6 +158,7 @@ function App() {
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [hasAdmin, setHasAdmin] = useState(true);
+    const [isAdminCheckInProgress, setIsAdminCheckInProgress] = useState(false);
     
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [editingDraft, setEditingDraft] = useState<any | null>(null);
@@ -167,27 +168,33 @@ function App() {
     }, []);
 
     const checkAdminExists = useCallback(async () => {
+        setIsAdminCheckInProgress(true);
         try {
-            // Using RPC is more reliable for unauthenticated status checks
+            // Using RPC to bypass RLS for initial public check
             const { data, error } = await supabase.rpc('has_admin_user');
             
             if (error) {
-                console.warn("Admin check RPC failed (might not exist yet):", error.message || error);
-                // Fallback to direct query if RPC is missing
+                console.warn("Admin check RPC failed, trying head query fallback:", error.message || "Unknown error");
+                // Fallback head query
                 const { data: directData, error: directError } = await supabase
                     .from('profiles')
                     .select('id', { count: 'exact', head: true })
                     .eq('role', 'admin');
                 
-                if (directError) throw directError;
-                setHasAdmin(!!directData && directData.length > 0);
+                if (directError) {
+                   console.error("Direct admin check failed:", directError.message || directError);
+                   setHasAdmin(true); // Default to true if database is unreachable or strict
+                } else {
+                   setHasAdmin(!!directData && directData.length > 0);
+                }
             } else {
                 setHasAdmin(data === true);
             }
         } catch (err: any) {
-            console.error("Critical admin check error:", err.message || err);
-            // Default to assuming an admin exists to avoid false-positive registration screens
+            console.error("Critical admin check error:", err.message || "Unknown error");
             setHasAdmin(true);
+        } finally {
+            setIsAdminCheckInProgress(false);
         }
     }, []);
 
@@ -212,7 +219,8 @@ function App() {
                 setSession(session);
                 fetchProfileAndStats(session.user);
             } else {
-                checkAdminExists().then(() => setLoading(false));
+                // If no session, don't wait for admin check to show landing page
+                setLoading(false);
             }
         });
 
@@ -223,13 +231,12 @@ function App() {
                 setShowAuthOverlay(false);
             } else {
                 setCurrentUser(null);
-                // Re-verify if an admin exists when signing out to update the UI state
-                checkAdminExists().then(() => setLoading(false));
+                setLoading(false);
             }
         });
 
         return () => subscription.unsubscribe();
-    }, [fetchProfileAndStats, checkAdminExists]);
+    }, [fetchProfileAndStats]);
 
     const handlePatientAdded = () => {
         setEditingPatient(null);
@@ -241,6 +248,16 @@ function App() {
         setEditingPatient(null);
         setEditingDraft(null);
         setCurrentPage(page);
+    };
+
+    const handleLaunchPortal = async () => {
+        if (session) {
+            setCurrentPage('dashboard');
+        } else {
+            // Check if admin exists only when modal is requested
+            setShowAuthOverlay(true);
+            await checkAdminExists();
+        }
     };
 
     const renderMainContent = () => {
@@ -267,19 +284,29 @@ function App() {
     if (!session || !currentUser) {
         return (
             <>
-                <LandingPage onLoginClick={() => setShowAuthOverlay(true)} isLoggedIn={!!session} />
+                <LandingPage onLoginClick={handleLaunchPortal} isLoggedIn={!!session} />
                 {showAuthOverlay && (
                     <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
                         <div className="auth-card" onClick={e => e.stopPropagation()}>
                             <button className="auth-close" onClick={() => setShowAuthOverlay(false)}>&times;</button>
-                            <AuthPage hasAdmin={hasAdmin} onAdminCreated={() => {
-                                showNotification('Lead Admin account created. Please verify your email.', 'success');
-                                checkAdminExists();
-                            }} />
+                            {isAdminCheckInProgress ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontWeight: 600 }}>Syncing with Registry Cloud...</p>
+                                    <div className="spinner-small" style={{ margin: '0 auto', width: '30px', height: '30px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+                                </div>
+                            ) : (
+                                <AuthPage hasAdmin={hasAdmin} onAdminCreated={() => {
+                                    showNotification('Lead Admin account created. Please verify your email.', 'success');
+                                    checkAdminExists();
+                                }} />
+                            )}
                         </div>
                     </div>
                 )}
                 {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
+                <style>{`
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                `}</style>
             </>
         );
     }

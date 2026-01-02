@@ -75,27 +75,41 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
                 </div>
             </section>
 
-            <section id="pi" className="section-container pi-section" style={{ background: 'var(--secondary)', color: 'white', display: 'flex', gap: '4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="pi-image-placeholder" style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '3rem' }}>🔬</span>
-                </div>
-                <div className="pi-content" style={{ flex: 1, minWidth: '300px' }}>
-                    <span className="pi-badge" style={{ background: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800, marginBottom: '1rem', display: 'inline-block' }}>Principal Investigator</span>
-                    <h2>Dr. Orebowale Oreboka Olugbemide</h2>
-                    <p style={{ fontSize: '1.1rem', marginBottom: '2rem', opacity: 0.85, maxWidth: '600px' }}>
-                        Consultant Endocrinologist at Irrua Specialist Teaching Hospital (ISTH). 
-                        Leading the digital transformation of diabetes research in West Africa through standardized registries.
-                        <br/><br/>
-                        Contact PI: <a href="mailto:oreboka@gmail.com" style={{ color: 'var(--primary)', fontWeight: 800 }}>oreboka@gmail.com</a>
-                    </p>
-                    <div style={{ display: 'flex', gap: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2.5rem' }}>
-                        <div>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>ISTH</div>
-                            <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Hospital</div>
+            <section id="pi" className="section-container pi-section">
+                <div className="pi-card">
+                    <div className="pi-header">
+                        <div className="pi-avatar">
+                            <span>🔬</span>
                         </div>
-                        <div>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>14+</div>
-                            <div style={{ opacity: 0.6, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Research Sites</div>
+                        <div className="pi-info">
+                            <span className="badge">Principal Investigator</span>
+                            <h2>Dr. Orebowale Oreboka Olugbemide</h2>
+                            <p className="pi-title">Consultant Endocrinologist at ISTH</p>
+                        </div>
+                    </div>
+                    <div className="pi-body">
+                        <p>
+                            Dr. Olugbemide leads the Nigeria Inpatient Diabetes Presence & Outcomes (NIDPO) research network. 
+                            He is a Consultant Physician/Endocrinologist at Irrua Specialist Teaching Hospital (ISTH), 
+                            dedicated to optimizing glycemic control outcomes through standardized multicenter analytics.
+                        </p>
+                    </div>
+                    <div className="pi-footer">
+                        <a href="mailto:oreboka@gmail.com" className="pi-contact-btn">
+                           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                           </svg>
+                           <span>Contact PI Office</span>
+                        </a>
+                        <div className="pi-stats">
+                            <div className="stat">
+                                <span className="val">ISTH</span>
+                                <span className="lbl">Host Site</span>
+                            </div>
+                            <div className="stat">
+                                <span className="val">14+</span>
+                                <span className="lbl">Research Centers</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,12 +157,38 @@ function App() {
     const [stats, setStats] = useState({ patients: 0, users: 0, centers: 0 });
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [hasAdmin, setHasAdmin] = useState(true);
     
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [editingDraft, setEditingDraft] = useState<any | null>(null);
 
     const showNotification = useCallback((message: string, type: 'success' | 'error') => {
         setNotifications(prev => [...prev, { id: Date.now(), message, type }]);
+    }, []);
+
+    const checkAdminExists = useCallback(async () => {
+        try {
+            // Using RPC is more reliable for unauthenticated status checks
+            const { data, error } = await supabase.rpc('has_admin_user');
+            
+            if (error) {
+                console.warn("Admin check RPC failed (might not exist yet):", error.message || error);
+                // Fallback to direct query if RPC is missing
+                const { data: directData, error: directError } = await supabase
+                    .from('profiles')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('role', 'admin');
+                
+                if (directError) throw directError;
+                setHasAdmin(!!directData && directData.length > 0);
+            } else {
+                setHasAdmin(data === true);
+            }
+        } catch (err: any) {
+            console.error("Critical admin check error:", err.message || err);
+            // Default to assuming an admin exists to avoid false-positive registration screens
+            setHasAdmin(true);
+        }
     }, []);
 
     const fetchProfileAndStats = useCallback(async (user: User) => {
@@ -171,22 +211,25 @@ function App() {
             if (session) {
                 setSession(session);
                 fetchProfileAndStats(session.user);
-            } else setLoading(false);
+            } else {
+                checkAdminExists().then(() => setLoading(false));
+            }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setSession(session);
             if (session) {
                 fetchProfileAndStats(session.user);
                 setShowAuthOverlay(false);
             } else {
                 setCurrentUser(null);
-                setLoading(false);
+                // Re-verify if an admin exists when signing out to update the UI state
+                checkAdminExists().then(() => setLoading(false));
             }
         });
 
         return () => subscription.unsubscribe();
-    }, [fetchProfileAndStats]);
+    }, [fetchProfileAndStats, checkAdminExists]);
 
     const handlePatientAdded = () => {
         setEditingPatient(null);
@@ -229,7 +272,10 @@ function App() {
                     <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
                         <div className="auth-card" onClick={e => e.stopPropagation()}>
                             <button className="auth-close" onClick={() => setShowAuthOverlay(false)}>&times;</button>
-                            <AuthPage hasAdmin={true} onAdminCreated={() => showNotification('Lead Admin account created. Please verify your email.', 'success')} />
+                            <AuthPage hasAdmin={hasAdmin} onAdminCreated={() => {
+                                showNotification('Lead Admin account created. Please verify your email.', 'success');
+                                checkAdminExists();
+                            }} />
                         </div>
                     </div>
                 )}

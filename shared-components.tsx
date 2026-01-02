@@ -44,7 +44,8 @@ export const Notification = ({ message, type, onClose }: { message: string, type
     );
 };
 
-export const Modal = ({ title, children, onClose }: { title: string, children: React.ReactNode, onClose: () => void }) => (
+// Fixed: Made children optional to resolve TypeScript "missing property" errors in callers within admin-pages.tsx
+export const Modal = ({ title, children, onClose }: { title: string, children?: React.ReactNode, onClose: () => void }) => (
     <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={onClose}>
         <div className="modal-content" style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '550px', overflow: 'hidden', boxShadow: 'var(--shadow)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>

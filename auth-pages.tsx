@@ -192,7 +192,8 @@ export function AuthPage({ hasAdmin, onAdminCreated }: { hasAdmin: boolean, onAd
             return;
         }
         if (data.user) {
-            const { error: rpcError } = await supabase.rpc('promote_user_to_admin', { user_id: data.user.id });
+            // Updated parameter name to p_user_id to match corrected SQL function
+            const { error: rpcError } = await supabase.rpc('promote_user_to_admin', { p_user_id: data.user.id });
             if (rpcError) setError(`Failed to set admin role: ${rpcError.message}`);
             else onAdminCreated();
         }

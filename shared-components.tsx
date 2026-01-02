@@ -13,6 +13,7 @@ export const IconEdit = () => <svg fill="none" viewBox="0 0 24 24" stroke="curre
 export const IconTrash = () => <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
 export const IconSave = () => <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>;
 export const IconDrafts = () => <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+export const IconExport = () => <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>;
 
 // --- UI COMPONENTS ---
 export const LoadingSpinner = () => (
@@ -44,13 +45,13 @@ export const Notification = ({ message, type, onClose }: { message: string, type
 };
 
 export const Modal = ({ title, children, onClose }: { title: string, children: React.ReactNode, onClose: () => void }) => (
-    <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
-        <div className="modal-content" style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '500px', overflow: 'hidden', boxShadow: 'var(--shadow)' }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={onClose}>
+        <div className="modal-content" style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '550px', overflow: 'hidden', boxShadow: 'var(--shadow)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                 <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>{title}</h3>
                 <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-muted)' }}>&times;</button>
             </div>
-            <div style={{ padding: '1.5rem' }}>{children}</div>
+            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>{children}</div>
         </div>
     </div>
 );
@@ -63,14 +64,51 @@ export const ProgressBar = ({ currentStep, steps, onStepClick }: { currentStep: 
                     key={index} 
                     className={`progress-step ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`} 
                     onClick={() => onStepClick(index)}
+                    type="button"
                 >
                     <div className="step-number">{index < currentStep ? '✓' : index + 1}</div>
-                    <div className="step-label">{step.split(' ')[0]}</div>
+                    <div className="step-label">{step}</div>
                 </button>
             ))}
         </div>
     </div>
 );
+
+export const MonitoringTable = ({ formData, handleInputChange }: { formData: any, handleInputChange: (id: string, value: any) => void }) => {
+    const days = Array.from({ length: 14 }, (_, i) => i + 1);
+    const times = ['morning', 'afternoon', 'night'];
+    const timeLabels = ['Morning', 'Afternoon', 'Night'];
+
+    return (
+        <div className="monitoring-table-wrapper">
+            <table className="monitoring-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        {timeLabels.map(time => <th key={time}>{time}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {days.map(day => (
+                        <tr key={day}>
+                            <td className="day-cell">Day {day}</td>
+                            {times.map((time) => (
+                              <td key={time}>
+                                <input
+                                  type="text"
+                                  value={formData[`glucose_day${day}_${time}`] || ''}
+                                  onChange={e => handleInputChange(`glucose_day${day}_${time}`, e.target.value)}
+                                  placeholder="mg/dL"
+                                />
+                              </td>
+                            ))}
+                        </tr>
+                   ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
 
 export const Sidebar = ({ currentPage, userRole, isOpen, setIsOpen, onNavigate }: any) => {
     const links = [

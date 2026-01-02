@@ -85,6 +85,8 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
                     <p style={{ fontSize: '1.1rem', marginBottom: '2rem', opacity: 0.85, maxWidth: '600px' }}>
                         Consultant Endocrinologist at Irrua Specialist Teaching Hospital (ISTH). 
                         Leading the digital transformation of diabetes research in West Africa through standardized registries.
+                        <br/><br/>
+                        Contact PI: <a href="mailto:oreboka@gmail.com" style={{ color: 'var(--primary)', fontWeight: 800 }}>oreboka@gmail.com</a>
                     </p>
                     <div style={{ display: 'flex', gap: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2.5rem' }}>
                         <div>
@@ -113,19 +115,19 @@ const DashboardPage = ({ stats }: { stats: any }) => (
     <div>
         <div style={{ marginBottom: '3rem' }}>
             <h1 style={{ fontSize: '2.25rem', fontWeight: 900 }}>Research Overview</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Global summary of clinical registry metrics.</p>
+            <p style={{ color: 'var(--text-muted)' }}>Global summary of clinical registry metrics across the multicenter network.</p>
         </div>
         <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Total Patients</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Total Patients Finalized</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.patients}</div>
             </div>
             <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Active Centers</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Verified Centers</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.centers}</div>
             </div>
             <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Network Size</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Research Staff</div>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.users}</div>
             </div>
         </div>
@@ -136,14 +138,12 @@ function App() {
     const [session, setSession] = useState<AuthSession | null>(null);
     const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [authChecking, setAuthChecking] = useState(true);
     const [showAuthOverlay, setShowAuthOverlay] = useState(false);
     const [currentPage, setCurrentPage] = useState<string>('dashboard');
     const [stats, setStats] = useState({ patients: 0, users: 0, centers: 0 });
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     
-    // Form Edit States
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [editingDraft, setEditingDraft] = useState<any | null>(null);
 
@@ -162,12 +162,8 @@ function App() {
                 supabase.from('centers').select('id', { count: 'exact', head: true }),
             ]);
             setStats({ patients: p.count || 0, users: u.count || 0, centers: c.count || 0 });
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setAuthChecking(false);
-            setLoading(false);
-        }
+        } catch (e) { console.error(e); }
+        finally { setLoading(false); }
     }, []);
 
     useEffect(() => {
@@ -175,10 +171,7 @@ function App() {
             if (session) {
                 setSession(session);
                 fetchProfileAndStats(session.user);
-            } else {
-                setAuthChecking(false);
-                setLoading(false);
-            }
+            } else setLoading(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -188,7 +181,6 @@ function App() {
                 setShowAuthOverlay(false);
             } else {
                 setCurrentUser(null);
-                setAuthChecking(false);
                 setLoading(false);
             }
         });
@@ -196,40 +188,50 @@ function App() {
         return () => subscription.unsubscribe();
     }, [fetchProfileAndStats]);
 
+    const handlePatientAdded = () => {
+        setEditingPatient(null);
+        setEditingDraft(null);
+        setCurrentPage('patients');
+    };
+
+    const handleNavigate = (page: string) => {
+        setEditingPatient(null);
+        setEditingDraft(null);
+        setCurrentPage(page);
+    };
+
     const renderMainContent = () => {
         if (!currentUser) return null;
         switch (currentPage) {
             case 'dashboard': return <DashboardPage stats={stats} />;
-            case 'patients': return <PatientsPage currentUser={currentUser} showNotification={showNotification} onEditPatient={(p) => { setEditingPatient(p); setCurrentPage('add_patient'); }} />;
-            case 'add_patient': return <AddPatientPage showNotification={showNotification} onPatientAdded={() => setCurrentPage('patients')} currentUser={currentUser} editingPatient={editingPatient} editingDraft={editingDraft} isReconnecting={false} />;
-            case 'drafts': return <DraftsPage currentUser={currentUser} showNotification={showNotification} onEditDraft={(d) => { setEditingDraft(d); setCurrentPage('add_patient'); }} />;
-            case 'users': return currentUser.role === 'admin' ? <UsersPage showNotification={showNotification} /> : <DashboardPage stats={stats} />;
-            case 'centers': return currentUser.role === 'admin' ? <CentersPage showNotification={showNotification} /> : <DashboardPage stats={stats} />;
+            case 'patients': return <PatientsPage currentUser={currentUser} showNotification={showNotification} onEditPatient={(p: Patient) => { setEditingPatient(p); setEditingDraft(null); setCurrentPage('add_patient'); }} />;
+            case 'add_patient': return <AddPatientPage showNotification={showNotification} onPatientAdded={handlePatientAdded} currentUser={currentUser} editingPatient={editingPatient} editingDraft={editingDraft} />;
+            case 'drafts': return <DraftsPage currentUser={currentUser} showNotification={showNotification} onEditDraft={(d: any) => { setEditingDraft(d); setEditingPatient(null); setCurrentPage('add_patient'); }} />;
+            case 'users': return <UsersPage showNotification={showNotification} />;
+            case 'centers': return <CentersPage showNotification={showNotification} />;
             default: return <DashboardPage stats={stats} />;
         }
     };
 
+    const urlParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+    const token = urlParams.get('token');
+
     if (loading) return <LoadingSpinner />;
+
+    if (token) return <InvitationSignUpPage token={token} showNotification={showNotification} onSignedUp={() => window.location.hash = '/'} />;
 
     if (!session || !currentUser) {
         return (
             <>
                 <LandingPage onLoginClick={() => setShowAuthOverlay(true)} isLoggedIn={!!session} />
-                
                 {showAuthOverlay && (
                     <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
                         <div className="auth-card" onClick={e => e.stopPropagation()}>
-                            <button 
-                                className="auth-close"
-                                onClick={() => setShowAuthOverlay(false)} 
-                            >
-                                &times;
-                            </button>
-                            <AuthPage hasAdmin={true} onAdminCreated={() => {}} />
+                            <button className="auth-close" onClick={() => setShowAuthOverlay(false)}>&times;</button>
+                            <AuthPage hasAdmin={true} onAdminCreated={() => showNotification('Lead Admin verification sent.', 'success')} />
                         </div>
                     </div>
                 )}
-
                 {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
             </>
         );
@@ -237,25 +239,10 @@ function App() {
 
     return (
         <div className="app-layout">
-            <Sidebar 
-                currentPage={currentPage} 
-                userRole={currentUser.role} 
-                isOpen={isSidebarOpen} 
-                setIsOpen={setSidebarOpen} 
-                onNavigate={(p) => { 
-                    if (p === 'add_patient') { setEditingPatient(null); setEditingDraft(null); }
-                    setCurrentPage(p); 
-                }} 
-            />
+            <Sidebar currentPage={currentPage} userRole={currentUser.role} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} onNavigate={handleNavigate} />
             <main className="main-content">
-                <Header 
-                    currentUser={currentUser} 
-                    onLogout={() => supabase.auth.signOut()} 
-                    onMenuClick={() => setSidebarOpen(!isSidebarOpen)} 
-                />
-                <div className="page-content">
-                    {renderMainContent()}
-                </div>
+                <Header currentUser={currentUser} onLogout={() => supabase.auth.signOut()} onMenuClick={() => setSidebarOpen(!isSidebarOpen)} />
+                <div className="page-content">{renderMainContent()}</div>
             </main>
             {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
         </div>

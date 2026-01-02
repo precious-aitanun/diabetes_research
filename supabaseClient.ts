@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Custom fetch wrapper with timeout
@@ -25,8 +26,9 @@ const fetchWithTimeout = (input: RequestInfo | URL, init?: RequestInit): Promise
 };
 
 // These should be set in your environment
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Fix: Use type assertion on import.meta to allow access to Vite-specific 'env' property which may not be present in the default TypeScript ImportMeta interface
+const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase URL and Anon Key not found in process.env. Make sure they are provided.");

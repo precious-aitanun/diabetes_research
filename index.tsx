@@ -295,8 +295,7 @@ const Notification = ({ message, type, onClose }: NotificationProps) => {
 
 type ModalProps = {
     title: string;
-    // FIX: Make children optional to resolve TS error where compiler fails to see nested JSX elements as children prop
-    children?: React.ReactNode;
+    children: React.ReactNode;
     onClose: () => void;
     onConfirm?: () => void;
     confirmText?: string;

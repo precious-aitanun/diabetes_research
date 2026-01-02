@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { supabase } from './supabaseClient';
@@ -162,7 +163,7 @@ const formStructure: FormSection[] = [
             { id: 'hypoglycemiaEpisodes', label: 'Episodes of hypoglycemia (<70 mg/dL)', type: 'radio', options: ['Yes', 'No'], required: true },
             { id: 'hypoglycemiaCount', label: 'Number of hypoglycemia episodes', type: 'number', condition: (data) => data.hypoglycemiaEpisodes === 'Yes' },
             { id: 'hyperglycemiaEpisodes', label: 'Episodes of hyperglycemia (>250 mg/dL)', type: 'radio', options: ['Yes', 'No'], required: true },
-            { id: 'hyperglycemiaCount', label: 'Number of hyperglycemia episodes', type: 'number', condition: (data) => data.hyperglycemiaEpisodes === 'Yes' },
+            { id: 'hyperglycemiaCount', label: 'Number of hyperglycemia episodes', type: 'number', condition: (data) => data.hypoglycemiaEpisodes === 'Yes' },
         ],
     },
     {
@@ -1411,6 +1412,7 @@ function AddPatientPage({ showNotification, onPatientAdded, currentUser, editing
             });
         });
         
+        // FIX: Replaced 'boolean' type with logic expression and used comma instead of semicolon
         return {
             isValid: missingFields.length === 0,
             missingFields
@@ -1956,14 +1958,20 @@ type AuthPageProps = {
     onAdminCreated: () => void;
 };
 function AuthPage({ hasAdmin, onAdminCreated }: AuthPageProps) {
-    const mode = hasAdmin ? 'login' : 'admin_signup';
-    const [authMode, setAuthMode] = useState<'login' | 'admin_signup' | 'reset'>(mode);
+    const [authMode, setAuthMode] = useState<'login' | 'admin_signup' | 'reset'>(hasAdmin ? 'login' : 'admin_signup');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Sync state if hasAdmin changes (e.g., after DB check finishes)
+    useEffect(() => {
+        if (authMode !== 'reset') {
+            setAuthMode(hasAdmin ? 'login' : 'admin_signup');
+        }
+    }, [hasAdmin]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -2052,7 +2060,7 @@ function AuthPage({ hasAdmin, onAdminCreated }: AuthPageProps) {
       }
 
     const renderForm = () => {
-        if (mode === 'admin_signup') {
+        if (authMode === 'admin_signup') {
             return (
                 <form onSubmit={handleAdminSignUp}>
                     <h1>Create Admin Account</h1>
@@ -2151,18 +2159,14 @@ function App() {
 
     useEffect(() => {
         const checkAdminExists = async () => {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('role', 'admin')
-                .limit(1)
-                .maybeSingle();
+            // FIX: Using security definer RPC to bypass RLS for anonymous check
+            const { data, error } = await supabase.rpc('is_admin_registered');
             
             if (error) {
-                console.error("Error checking for admin:", error);
+                console.error("Error checking for admin (RPC):", error);
                 setHasAdmin(false);
             } else {
-                setHasAdmin(data !== null);
+                setHasAdmin(!!data);
             }
         };
 

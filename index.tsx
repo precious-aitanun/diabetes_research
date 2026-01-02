@@ -34,102 +34,99 @@ import {
   CentersPage 
 } from './admin-pages';
 
-// --- LANDING PAGE COMPONENTS ---
-
-const LandingPage = ({ onLoginClick }: { onLoginClick: () => void }) => {
+// --- MODERN LANDING PAGE ---
+const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, isLoggedIn: boolean }) => {
     return (
         <div className="landing-wrapper">
             <nav className="landing-nav">
-                <a href="/" className="logo-text">NIDPO</a>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <button className="btn btn-outline" style={{ border: 'none' }} onClick={() => document.getElementById('pi')?.scrollIntoView({ behavior: 'smooth' })}>The PI</button>
-                    <button className="btn btn-primary" onClick={onLoginClick}>Portal Login</button>
+                <div className="logo-text">NIDPO</div>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className="btn btn-primary" onClick={onLoginClick}>
+                        {isLoggedIn ? 'Go to Dashboard' : 'Researcher Portal'}
+                    </button>
                 </div>
             </nav>
 
             <header className="hero-section">
-                <span className="hero-badge">A Nigerian Endocrine Initiative</span>
-                <h1 className="hero-title">Precision Clinical Outcomes for Diabetes Research</h1>
-                <p className="hero-subtitle">NIDPO is a secure, multi-center database platform designed to standardize inpatient diabetes care metrics across Nigeria's tertiary hospitals.</p>
-                <div className="cta-group">
-                    <button className="btn btn-primary" onClick={onLoginClick}>Enter Research Portal</button>
-                    <button className="btn btn-outline" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>Our Methodology</button>
+                <h1 className="hero-title">Precision Outcomes for <br/>Metabolic Research</h1>
+                <p className="hero-subtitle">
+                    The Nigeria Inpatient Diabetes Presence & Outcomes (NIDPO) study standardizes diabetes care metrics across Nigeria's tertiary hospitals through a unified registry.
+                </p>
+                <div className="cta-group" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button className="btn btn-primary" onClick={onLoginClick}>Launch Portal</button>
+                    <a href="#pi" className="btn btn-outline">Meet the Lead PI</a>
                 </div>
             </header>
 
             <section id="about" className="section-container">
                 <div className="grid-3">
                     <div className="feature-card">
-                        <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔬</div>
-                        <h3 style={{ marginBottom: '0.75rem', color: 'var(--secondary)' }}>Standardized Collection</h3>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Automated workflows for capturing comprehensive demographic, clinical, and biochemical markers.</p>
+                        <h3>Standardized Data</h3>
+                        <p>Consistency across demographics, biochemical markers, and treatment outcomes for multicenter clinical research.</p>
                     </div>
                     <div className="feature-card">
-                        <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📈</div>
-                        <h3 style={{ marginBottom: '0.75rem', color: 'var(--secondary)' }}>Outcome Analysis</h3>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Real-time data synchronization across centers to monitor trends in diabetes-related complications.</p>
+                        <h3>Real-time Tracking</h3>
+                        <p>Synchronize findings across Nigeria's tertiary hospitals instantly through our secure cloud infrastructure.</p>
                     </div>
                     <div className="feature-card">
-                        <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💻</div>
-                        <h3 style={{ marginBottom: '0.75rem', color: 'var(--secondary)' }}>Digital Transformation</h3>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Moving beyond paper-based records to a robust, cloud-native infrastructure for longitudinal study.</p>
+                        <h3>Secure Registry</h3>
+                        <p>Enterprise-grade encryption protecting patient anonymity while enabling longitudinal metabolic studies.</p>
                     </div>
                 </div>
             </section>
 
-            <section id="pi" className="pi-section">
-                <div className="pi-grid">
-                    <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=800&auto=format&fit=crop" alt="Dr. Olugbemide" className="pi-image" />
-                    <div className="pi-content">
-                        <span className="pi-tag">Principal Investigator</span>
-                        <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem' }}>Dr. Orebowale Oreboka Olugbemide</h2>
-                        <h4 style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontWeight: 600 }}>Consultant Endocrinologist</h4>
-                        <p style={{ fontSize: '1.0625rem', opacity: 0.9, marginBottom: '2.5rem', lineHeight: '1.7' }}>
-                            A dedicated Consultant Endocrinologist at the Irrua Specialist Teaching Hospital (ISTH), Dr. Olugbemide leads this initiative to unify metabolic research across Nigeria. Her expertise in clinical outcomes drives the platform's focus on evidence-based healthcare transformation.
-                        </p>
-                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.25rem' }}>Primary Institution</p>
-                            <p style={{ fontSize: '1rem' }}>Irrua Specialist Teaching Hospital, Edo State</p>
+            <section id="pi" className="section-container pi-section">
+                <div className="pi-image-placeholder">
+                    <span style={{ fontSize: '3rem' }}>🔬</span>
+                </div>
+                <div className="pi-content">
+                    <span className="pi-badge">Principal Investigator</span>
+                    <h2>Dr. Orebowale Oreboka Olugbemide</h2>
+                    <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.85 }}>
+                        Consultant Endocrinologist at Irrua Specialist Teaching Hospital (ISTH). 
+                        Leading the digital transformation of diabetes research in West Africa through standardized registries.
+                    </p>
+                    <div style={{ display: 'flex', gap: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2.5rem' }}>
+                        <div>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>ISTH</div>
+                            <div style={{ opacity: 0.6, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Hospital</div>
                         </div>
-                        <div style={{ marginTop: '2.5rem' }}>
-                            <a href="mailto:olugbemide@isth.gov.ng" className="btn btn-primary">Connect for Collaboration</a>
+                        <div>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 900 }}>14+</div>
+                            <div style={{ opacity: 0.6, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Research Sites</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section className="section-container" style={{ textAlign: 'center', paddingBottom: '8rem' }}>
-                <h2 style={{ marginBottom: '1.5rem', color: 'var(--secondary)' }}>Request Researcher Access</h2>
-                <p style={{ maxWidth: '600px', margin: '0 auto 2.5rem', color: 'var(--text-muted)' }}>This platform is strictly for authorized medical consultants and research assistants within the NIDPO consortium.</p>
-                <button className="btn btn-primary" onClick={onLoginClick}>Sign In to Workspace</button>
-            </section>
-
-            <footer style={{ padding: '3rem 5%', borderTop: '1px solid var(--border)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                <p>© 2024 NIDPO Platform. Led by Dr. Orebowale Oreboka Olugbemide. ISTH Research Unit.</p>
+            <footer style={{ padding: '5rem 5%', borderTop: '1px solid var(--border)', textAlign: 'center', background: '#fafafa' }}>
+                <p style={{ color: 'var(--text-muted)' }}>
+                    © 2024 NIDPO Platform. Irrua Specialist Teaching Hospital Research Unit. Edo State, Nigeria.
+                </p>
             </footer>
         </div>
     );
 };
 
-// --- DASHBOARD PAGE ---
-const DashboardPage = ({ stats }: { stats: { patients: number, users: number, centers: number } }) => (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div className="page-header" style={{ marginBottom: '2rem' }}>
-            <h1 style={{ fontSize: '1.875rem' }}>Clinical Overview</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Real-time summary of research data across active centers.</p>
+// --- PRIVATE DASHBOARD ---
+const DashboardPage = ({ stats }: { stats: any }) => (
+    <div>
+        <div style={{ marginBottom: '3rem' }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 900 }}>Research Overview</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Global summary of clinical registry metrics.</p>
         </div>
-        <div className="dashboard-grid">
-            <div className="dashboard-card">
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Total Patients</span>
-                <div className="metric">{stats.patients}</div>
+        <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Total Patients</div>
+                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.patients}</div>
             </div>
-            <div className="dashboard-card">
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Active Centers</span>
-                <div className="metric">{stats.centers}</div>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Active Centers</div>
+                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.centers}</div>
             </div>
-            <div className="dashboard-card">
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Network Size</span>
-                <div className="metric">{stats.users}</div>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem' }}>Network Size</div>
+                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--primary)' }}>{stats.users}</div>
             </div>
         </div>
     </div>
@@ -139,34 +136,25 @@ function App() {
     const [session, setSession] = useState<AuthSession | null>(null);
     const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [hasAdmin, setHasAdmin] = useState(true);
+    const [authChecking, setAuthChecking] = useState(true);
     const [showAuthOverlay, setShowAuthOverlay] = useState(false);
     const [currentPage, setCurrentPage] = useState<string>('dashboard');
     const [stats, setStats] = useState({ patients: 0, users: 0, centers: 0 });
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    
+    // Form Edit States
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [editingDraft, setEditingDraft] = useState<any | null>(null);
-
-    const urlHash = window.location.hash;
-    const params = new URLSearchParams(urlHash.substring(urlHash.indexOf('?')));
-    const invitationToken = params.get('token');
-    const isInitializing = useRef(false);
-    const isResetPassword = urlHash.includes('/reset-password') || urlHash.includes('type=recovery');
 
     const showNotification = useCallback((message: string, type: 'success' | 'error') => {
         setNotifications(prev => [...prev, { id: Date.now(), message, type }]);
     }, []);
 
-    const fetchInitialData = useCallback(async (user: User) => {
+    const fetchProfileAndStats = useCallback(async (user: User) => {
         try {
-            const { data: profile, error } = await supabase.from('profiles').select('*, centers(name)').eq('id', user.id).single();
-            if (error) { 
-              showNotification("Could not fetch user profile.", "error"); 
-              await supabase.auth.signOut(); 
-              return; 
-            }
-            setCurrentUser(profile as UserProfile);
+            const { data: profile } = await supabase.from('profiles').select('*, centers(name)').eq('id', user.id).single();
+            if (profile) setCurrentUser(profile as UserProfile);
             
             const [p, u, c] = await Promise.all([
                 supabase.from('patients').select('id', { count: 'exact', head: true }),
@@ -174,54 +162,41 @@ function App() {
                 supabase.from('centers').select('id', { count: 'exact', head: true }),
             ]);
             setStats({ patients: p.count || 0, users: u.count || 0, centers: c.count || 0 });
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setAuthChecking(false);
             setLoading(false);
-        } catch (e) { 
-          console.error(e); 
-          setLoading(false); 
         }
-    }, [showNotification]);
+    }, []);
 
     useEffect(() => {
-        const initializeSession = async () => {
-            if (isInitializing.current) return;
-            isInitializing.current = true;
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            const { data } = await supabase.rpc('is_admin_registered');
-            setHasAdmin(!!data);
-
-            if (session?.user) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
                 setSession(session);
-                await fetchInitialData(session.user);
+                fetchProfileAndStats(session.user);
             } else {
+                setAuthChecking(false);
                 setLoading(false);
             }
-            isInitializing.current = false;
-        };
-        initializeSession();
+        });
 
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, sess) => {
-            if (event === 'PASSWORD_RECOVERY') { 
-              setSession(sess); 
-              window.location.hash = '#/reset-password'; 
-              return; 
-            }
-            if (event === 'SIGNED_OUT') { 
-              setSession(null); 
-              setCurrentUser(null); 
-              setLoading(false); 
-              return; 
-            }
-            if (event === 'SIGNED_IN' && sess?.user) { 
-              setSession(sess); 
-              await fetchInitialData(sess.user); 
-              setShowAuthOverlay(false); 
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            if (session) {
+                fetchProfileAndStats(session.user);
+                setShowAuthOverlay(false);
+            } else {
+                setCurrentUser(null);
+                setAuthChecking(false);
+                setLoading(false);
             }
         });
-        return () => authListener.subscription.unsubscribe();
-    }, [fetchInitialData]);
 
-    const renderPage = () => {
+        return () => subscription.unsubscribe();
+    }, [fetchProfileAndStats]);
+
+    const renderMainContent = () => {
         if (!currentUser) return null;
         switch (currentPage) {
             case 'dashboard': return <DashboardPage stats={stats} />;
@@ -235,27 +210,26 @@ function App() {
     };
 
     if (loading) return <LoadingSpinner />;
-    
-    if (isResetPassword) return <><ResetPasswordPage showNotification={showNotification} />{notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}</>;
-    if (invitationToken) return <><InvitationSignUpPage token={invitationToken} showNotification={showNotification} onSignedUp={() => window.location.hash = '/'} />{notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}</>;
 
     if (!session || !currentUser) {
         return (
             <>
-                <LandingPage onLoginClick={() => setShowAuthOverlay(true)} />
+                <LandingPage onLoginClick={() => setShowAuthOverlay(true)} isLoggedIn={!!session} />
+                
                 {showAuthOverlay && (
-                    <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)}>
-                        <div className="auth-modal" onClick={e => e.stopPropagation()}>
+                    <div className="auth-overlay" onClick={() => setShowAuthOverlay(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                        <div style={{ background: 'white', width: '100%', maxWidth: '440px', padding: '3rem', borderRadius: '12px', position: 'relative' }} onClick={e => e.stopPropagation()}>
                             <button 
-                                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-muted)' }} 
-                                onClick={() => setShowAuthOverlay(false)}
+                                onClick={() => setShowAuthOverlay(false)} 
+                                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', opacity: 0.5 }}
                             >
                                 &times;
                             </button>
-                            <AuthPage hasAdmin={hasAdmin} onAdminCreated={() => { showNotification('Admin created! Verify email.', 'success'); setHasAdmin(true); }} />
+                            <AuthPage hasAdmin={true} onAdminCreated={() => {}} />
                         </div>
                     </div>
                 )}
+
                 {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
             </>
         );
@@ -263,12 +237,27 @@ function App() {
 
     return (
         <div className="app-layout">
-            {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
-            <Sidebar currentPage={currentPage} userRole={currentUser.role} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} onNavigate={(p) => { if (p === 'add_patient') { setEditingPatient(null); setEditingDraft(null); } setCurrentPage(p); }} />
+            <Sidebar 
+                currentPage={currentPage} 
+                userRole={currentUser.role} 
+                isOpen={isSidebarOpen} 
+                setIsOpen={setSidebarOpen} 
+                onNavigate={(p) => { 
+                    if (p === 'add_patient') { setEditingPatient(null); setEditingDraft(null); }
+                    setCurrentPage(p); 
+                }} 
+            />
             <main className="main-content">
-                <Header currentUser={currentUser} onLogout={() => supabase.auth.signOut()} onMenuClick={() => setSidebarOpen(!isSidebarOpen)} />
-                <div className="page-content">{renderPage()}</div>
+                <Header 
+                    currentUser={currentUser} 
+                    onLogout={() => supabase.auth.signOut()} 
+                    onMenuClick={() => setSidebarOpen(!isSidebarOpen)} 
+                />
+                <div className="page-content">
+                    {renderMainContent()}
+                </div>
             </main>
+            {notifications.map(n => <Notification key={n.id} {...n} onClose={() => setNotifications(p => p.filter(i => i.id !== n.id))} />)}
         </div>
     );
 }

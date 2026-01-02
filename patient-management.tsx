@@ -1,321 +1,176 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { LoadingSpinner, IconEdit, IconTrash, IconExport, ProgressBar } from './shared-components';
+import { LoadingSpinner, IconEdit, IconTrash, ProgressBar, IconSave } from './shared-components';
 import { UserProfile, Patient, FormField } from './types';
 import { formStructure } from './constants';
 
-export function PatientsPage({ currentUser, showNotification, onEditPatient }: { currentUser: UserProfile, showNotification: (m: string, t: 'success' | 'error') => void, onEditPatient: (p: Patient) => void }) {
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-
-    useEffect(() => {
-        const fetchPatients = async () => {
-            setLoading(true);
-            let query = supabase.from('patients').select('*, centers(name)');
-            if (currentUser.role !== 'admin') query = query.eq('centerId', currentUser.centerId);
-            const { data, error } = await query.order('dateAdded', { ascending: false });
-            if (error) showNotification('Error fetching patients: ' + error.message, 'error');
-            else setPatients(data as Patient[]);
-            setLoading(false);
-        };
-        fetchPatients();
-    }, [currentUser, showNotification]);
-
-    const filteredPatients = useMemo(() => patients.filter(p => p.patientId.toLowerCase().includes(searchTerm.toLowerCase())), [patients, searchTerm]);
-    
-    const exportToCsv = () => {
-        const allFormFields: string[] = [];
-        formStructure.forEach(section => {
-            section.fields.forEach(field => {
-                if (field.type !== 'monitoring_table') allFormFields.push(field.id);
-                else for (let day = 1; day <= 14; day++) ['morning', 'afternoon', 'night'].forEach(time => allFormFields.push(`glucose_day${day}_${time}`));
-            });
-        });
-        const headers = ['Patient ID', 'Age', 'Sex', 'Center', 'Date Added', ...allFormFields];
-        const rows = filteredPatients.map(p => {
-            const baseData = [p.patientId, p.age, p.sex, p.centers?.name || 'N/A', p.dateAdded];
-            const formDataValues = allFormFields.map(fieldId => {
-                let value = p.formData?.[fieldId];
-                if (value === undefined || value === null) {
-                    if (fieldId === 'serialNumber') value = p.patientId;
-                    else if (fieldId === 'age') value = p.age;
-                    else if (fieldId === 'sex') value = p.sex;
-                    else if (fieldId === 'centerId') value = p.centerId;
-                }
-                if (value === undefined || value === null) return '';
-                if (Array.isArray(value)) return value.join('; ');
-                return value;
-            });
-            return [...baseData, ...formDataValues];
-        });
-        const escapeCsvField = (f: any) => {
-            const s = String(f);
-            if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
-            return s;
-        };
-        const csvContent = headers.map(escapeCsvField).join(",") + "\n" + rows.map(r => r.map(escapeCsvField).join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", `patients_export_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        showNotification(`Exported ${rows.length} patients successfully`, 'success');
-    };
-
-    if (loading) return <LoadingSpinner />;
-
-    return (
-        <div>
-            <div className="page-header"><h1>Patient Data Registry</h1></div>
-            <div className="table-container">
-                <div className="table-controls">
-                    <input type="text" placeholder="Search by Patient ID..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <div className="table-actions"><button className="btn btn-primary" onClick={exportToCsv}><IconExport /> Export CSV</button></div>
-                </div>
-                <div className="table-wrapper">
-                    <table>
-                        <thead><tr><th>Patient ID</th><th>Age</th><th>Sex</th><th>Center</th><th>Date Added</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {filteredPatients.map(patient => (
-                                <tr key={patient.id}>
-                                    <td>{patient.patientId}</td><td>{patient.age}</td><td>{patient.sex}</td><td>{patient.centers?.name || 'N/A'}</td><td>{new Date(patient.dateAdded).toLocaleDateString()}</td>
-                                    <td className="actions-cell"><button onClick={() => onEditPatient(patient)} aria-label={`Edit patient ${patient.patientId}`} className="btn-icon"><IconEdit /></button></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// --- DRAFTS PAGE ---
-// Fix: Added missing DraftsPage component to handle clinical record drafts.
-export function DraftsPage({ currentUser, showNotification, onEditDraft }: { currentUser: UserProfile, showNotification: (m: string, t: 'success' | 'error') => void, onEditDraft: (d: any) => void }) {
-    const [drafts, setDrafts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchDrafts = useCallback(async () => {
-        setLoading(true);
-        // Using center_id as seen in AddPatientPage's draft save logic
-        let query = supabase.from('drafts').select('*, centers(name)');
-        if (currentUser.role !== 'admin') {
-            query = query.eq('user_id', currentUser.id);
-        }
-        const { data, error } = await query.order('updated_at', { ascending: false });
-        if (error) {
-            console.error('Fetch drafts error:', error);
-            showNotification('Error fetching drafts: ' + error.message, 'error');
-        } else {
-            setDrafts(data || []);
-        }
-        setLoading(false);
-    }, [currentUser, showNotification]);
-
-    useEffect(() => {
-        fetchDrafts();
-    }, [fetchDrafts]);
-
-    const handleDeleteDraft = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this draft?')) return;
-        const { error } = await supabase.from('drafts').delete().eq('id', id);
-        if (error) showNotification('Error deleting draft: ' + error.message, 'error');
-        else {
-            showNotification('Draft deleted successfully', 'success');
-            fetchDrafts();
-        }
-    };
-
-    if (loading) return <LoadingSpinner />;
-
-    return (
-        <div>
-            <div className="page-header"><h1>Saved Drafts</h1></div>
-            <div className="table-container">
-                <div className="table-controls">
-                    <p className="table-description">Manage incomplete clinical records. Drafts are private to you unless you are an administrator.</p>
-                </div>
-                <div className="table-wrapper">
-                    <table>
-                        <thead><tr><th>Patient ID</th><th>Last Updated</th><th>Center</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {drafts.length === 0 ? (
-                                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>No saved drafts found.</td></tr>
-                            ) : drafts.map(draft => (
-                                <tr key={draft.id}>
-                                    <td><strong>{draft.patient_id}</strong></td>
-                                    <td>{new Date(draft.updated_at).toLocaleString()}</td>
-                                    <td>{draft.centers?.name || 'N/A'}</td>
-                                    <td className="actions-cell">
-                                        <button onClick={() => onEditDraft(draft)} className="btn-icon" title="Continue Editing"><IconEdit /></button>
-                                        <button onClick={() => handleDeleteDraft(draft.id)} className="btn-icon" title="Delete Draft" style={{ color: '#dc3545' }}><IconTrash /></button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-const MonitoringTable = ({ formData, handleInputChange }: { formData: any, handleInputChange: (id: string, v: any) => void }) => {
-    const days = Array.from({ length: 14 }, (_, i) => i + 1);
-    const times = ['morning', 'afternoon', 'night'];
-    const timeLabels = ['Morning', 'Afternoon', 'Night'];
-    return (
-        <div className="monitoring-table-wrapper">
-            <table className="monitoring-table">
-                <thead><tr><th>Day</th>{timeLabels.map(t => <th key={t}>{t}</th>)}</tr></thead>
-                <tbody>
-                    {days.map(day => (
-                        <tr key={day}>
-                            <td className="day-cell" data-label="Day">Day {day}</td>
-                            {times.map((time, idx) => (
-                                <td key={time} data-label={timeLabels[idx]}>
-                                    <input type="text" value={formData[`glucose_day${day}_${time}`] || ''} onChange={e => handleInputChange(`glucose_day${day}_${time}`, e.target.value)} placeholder="mg/dL" aria-label={`Day ${day} ${timeLabels[idx]} glucose`} />
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-};
-
-export function AddPatientPage({ showNotification, onPatientAdded, currentUser, editingPatient, editingDraft, isReconnecting }: { showNotification: (m: string, t: 'success' | 'error') => void, onPatientAdded: () => void, currentUser: UserProfile, editingPatient?: Patient | null, editingDraft?: any | null, isReconnecting: boolean }) {
+export function AddPatientPage({ showNotification, onPatientAdded, currentUser, editingPatient }: any) {
     const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<any>(editingPatient?.formData || editingDraft?.form_data || {});
+    const [formData, setFormData] = useState<any>(editingPatient?.formData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [draftId, setDraftId] = useState<number | null>(editingDraft?.id || null);
-    const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
-    useEffect(() => {
-        if (editingPatient) { setFormData(editingPatient.formData || {}); setDraftId(null); }
-        else if (editingDraft) { setFormData(editingDraft.form_data || {}); setDraftId(editingDraft.id); }
-    }, [editingPatient, editingDraft]);
-
-    useEffect(() => {
-        if (!editingPatient && !editingDraft) {
-            const backup = localStorage.getItem('nidipo_form_backup');
-            if (backup) {
-                try {
-                    const parsed = JSON.parse(backup);
-                    if (parsed.userId === currentUser.id && (Date.now() - new Date(parsed.timestamp).getTime()) / (1000 * 60 * 60) < 24) {
-                        if (window.confirm('Restore recent backup?')) { setFormData(parsed.formData); showNotification('Restored from backup', 'success'); }
-                        else localStorage.removeItem('nidipo_form_backup');
-                    }
-                } catch (e) { console.error(e); }
-            }
-        }
-    }, [editingPatient, editingDraft, currentUser.id, showNotification]);
-
-    const handleInputChange = (fId: string, v: any) => {
-        const newData = { ...formData, [fId]: v }; setFormData(newData);
-        localStorage.setItem('nidipo_form_backup', JSON.stringify({ formData: newData, timestamp: new Date().toISOString(), userId: currentUser.id }));
+    const handleSaveDraft = () => {
+        localStorage.setItem('nidpo_draft_' + currentUser.id, JSON.stringify(formData));
+        showNotification('Form progress saved to local storage.', 'success');
     };
 
-    const handleCheckboxChange = (fId: string, opt: string, chk: boolean) => {
-        const vals = formData[fId] || [];
-        const newVals = chk ? [...vals, opt] : vals.filter((i: string) => i !== opt);
-        handleInputChange(fId, newVals);
-    };
-
-    const validateForm = () => {
-        const missing: string[] = [];
-        formStructure.forEach(sec => sec.fields.forEach(f => {
-            if (f.condition && !f.condition(formData)) return;
-            if (f.type === 'monitoring_table' && f.required) {
-                let total = 0; for (let d = 1; d <= 14; d++) ['morning', 'afternoon', 'night'].forEach(t => { if (formData[`glucose_day${d}_${t}`]?.trim()) total++; });
-                if (total < 42) missing.push(`${sec.title}: ${f.label} - All readings required.`);
-            } else if (f.required) {
-                const v = formData[f.id]; if (!v || (Array.isArray(v) && v.length === 0)) missing.push(`${sec.title}: ${f.label}`);
-            }
-        }));
-        return { isValid: missing.length === 0, missing };
-    };
-
-    const handleSaveDraft = async () => {
-        if (!formData.serialNumber) { showNotification('Enter Serial Number first', 'error'); return; }
-        setIsSaving(true);
-        const draftData = {
-            user_id: currentUser.id, center_id: (currentUser.role === 'admin' && formData.centerId ? parseInt(formData.centerId) : currentUser.centerId),
-            patient_id: formData.serialNumber, form_data: formData, updated_at: new Date().toISOString()
-        };
-        try {
-            const { data, error } = await supabase.from('drafts').upsert(draftData, { onConflict: 'user_id,patient_id,center_id' }).select().single();
-            if (error) throw error; setDraftId(data.id); setLastSaveTime(new Date()); showNotification('Draft saved!', 'success');
-        } catch (e: any) { showNotification(`Save error: ${e.message}`, 'error'); }
-        finally { setIsSaving(false); }
+    const handleInputChange = (id: string, value: any) => {
+        setFormData({ ...formData, [id]: value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const v = validateForm(); if (!v.isValid) { showNotification(`Missing: ${v.missing[0]}`, 'error'); return; }
         setIsSubmitting(true);
         try {
-            const core = { patientId: formData.serialNumber, age: formData.age, sex: formData.sex, centerId: (currentUser.role === 'admin' && formData.centerId ? parseInt(formData.centerId) : currentUser.centerId) };
-            const { error } = editingPatient ? await supabase.from('patients').update({ ...core, formData }).eq('id', editingPatient.id) : await supabase.from('patients').insert({ ...core, formData });
+            const payload = {
+                patientId: formData.serialNumber,
+                age: formData.age || 0,
+                sex: formData.sex || 'Unknown',
+                centerId: currentUser.centerId || 1,
+                formData: formData
+            };
+            const { error } = editingPatient 
+                ? await supabase.from('patients').update(payload).eq('id', editingPatient.id)
+                : await supabase.from('patients').insert([payload]);
+            
             if (error) throw error;
-            if (draftId) await supabase.from('drafts').delete().eq('id', draftId);
-            localStorage.removeItem('nidipo_form_backup'); showNotification('Submitted!', 'success'); onPatientAdded();
-        } catch (e: any) { showNotification(`Error: ${e.message}`, 'error'); }
-        finally { setIsSubmitting(false); }
+            showNotification('Patient record successfully uploaded to registry.', 'success');
+            localStorage.removeItem('nidpo_draft_' + currentUser.id);
+            onPatientAdded();
+        } catch (e: any) {
+            showNotification(e.message, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const renderField = (field: FormField) => {
         if (field.condition && !field.condition(formData)) return null;
-        const common = { id: field.id, value: formData[field.id] || '', onChange: (e: any) => handleInputChange(field.id, e.target.value) };
         return (
-            <div key={field.id} className={`form-group ${field.gridColumns === 1 ? 'full-width' : ''}`}>
-                <label htmlFor={field.id}>{field.label}</label>
-                {field.type === 'text' && <input type="text" {...common} />}
-                {field.type === 'number' && <input type="number" {...common} />}
-                {field.type === 'textarea' && <textarea {...common} rows={3} />}
-                {field.type === 'radio' && (
-                    <div className="radio-group">{field.options?.map(o => (
-                        <label key={o}><input type="radio" name={field.id} value={o} checked={formData[field.id] === o} onChange={e => handleInputChange(field.id, e.target.value)} />{o}</label>
-                    ))}</div>
+            <div key={field.id} className="form-group">
+                <label>{field.label}</label>
+                {field.type === 'radio' ? (
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '0.5rem 0' }}>
+                        {field.options?.map(opt => (
+                            <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
+                                <input type="radio" value={opt} checked={formData[field.id] === opt} onChange={() => handleInputChange(field.id, opt)} style={{ width: '16px', height: '16px' }} /> {opt}
+                            </label>
+                        ))}
+                    </div>
+                ) : (
+                    <input 
+                        type={field.type === 'number' ? 'number' : 'text'} 
+                        placeholder={field.helpText}
+                        value={formData[field.id] || ''} 
+                        onChange={e => handleInputChange(field.id, e.target.value)} 
+                    />
                 )}
-                {field.type === 'checkbox' && (
-                    <div className="checkbox-group">{field.options?.map(o => (
-                        <label key={o}><input type="checkbox" checked={formData[field.id]?.includes(o) || false} onChange={e => handleCheckboxChange(field.id, o, e.target.checked)} />{o}</label>
-                    ))}</div>
-                )}
-                {field.type === 'monitoring_table' && <MonitoringTable formData={formData} handleInputChange={handleInputChange} />}
-                {field.helpText && <p className="help-text">{field.helpText}</p>}
             </div>
         );
     };
 
     return (
-        <div className="form-page-container">
-            <div className="page-header">
-                <h1>{editingPatient ? 'Edit Patient Record' : 'New Clinical Entry'}</h1>
-                {lastSaveTime && <p className="help-text">Auto-save draft: {lastSaveTime.toLocaleTimeString()}</p>}
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Clinical Entry Registry</h1>
+                <p style={{ color: 'var(--text-muted)' }}>Multicenter standardized data collection form.</p>
             </div>
-            <div className="form-content-wrapper">
-                <ProgressBar currentStep={currentStep} steps={formStructure.map(s => s.title)} onStepClick={setCurrentStep} />
+
+            <ProgressBar currentStep={currentStep} steps={formStructure.map(s => s.title)} onStepClick={setCurrentStep} />
+
+            <div className="table-card" style={{ padding: '2rem', marginTop: '1.5rem' }}>
+                <div style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)' }}>{formStructure[currentStep].title}</h2>
+                    {formStructure[currentStep].description && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{formStructure[currentStep].description}</p>}
+                </div>
+
                 <form onSubmit={handleSubmit}>
-                    <h2 style={{ textAlign: 'left', marginBottom: '2rem' }}>{formStructure[currentStep].title}</h2>
-                    <div className="form-step-fields">{formStructure[currentStep].fields.map(renderField)}</div>
-                    <div className="form-navigation">
-                        <button type="button" className="btn btn-secondary" onClick={() => setCurrentStep(p => Math.max(0, p-1))} disabled={currentStep === 0 || isSubmitting || isSaving}>Previous</button>
-                        <div className="form-navigation-steps">
-                            <button type="button" className="btn btn-outline" style={{ border: '2px solid var(--border)' }} onClick={handleSaveDraft} disabled={isSaving || isSubmitting || !formData.serialNumber}>Save Draft</button>
-                            {currentStep < formStructure.length - 1 ? 
-                                <button type="button" className="btn btn-primary" onClick={() => setCurrentStep(p => p+1)} disabled={isSubmitting || isSaving}>Next</button> :
-                                <button type="submit" className="btn btn-primary" disabled={isSubmitting || isSaving}>{isSubmitting ? 'Submitting...' : 'Complete Registry'}</button>
-                            }
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                        {formStructure[currentStep].fields.map(renderField)}
+                    </div>
+
+                    <div className="form-footer">
+                        <button type="button" className="btn btn-outline" onClick={handleSaveDraft}>
+                            <IconSave /> Save Progress
+                        </button>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button type="button" className="btn btn-outline" disabled={currentStep === 0} onClick={() => setCurrentStep(s => s - 1)}>Back</button>
+                            {currentStep < formStructure.length - 1 ? (
+                                <button type="button" className="btn btn-primary" onClick={() => setCurrentStep(s => s + 1)}>Save & Continue</button>
+                            ) : (
+                                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Syncing...' : 'Final Submission'}</button>
+                            )}
                         </div>
                     </div>
                 </form>
             </div>
+        </div>
+    );
+}
+
+export function PatientsPage({ currentUser, onEditPatient }: any) {
+    const [patients, setPatients] = useState<Patient[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            const { data } = await supabase.from('patients').select('*, centers(name)').order('dateAdded', { ascending: false });
+            setPatients(data as Patient[] || []);
+            setLoading(false);
+        };
+        fetch();
+    }, []);
+
+    if (loading) return <LoadingSpinner />;
+
+    return (
+        <div>
+            <div style={{ marginBottom: '1.5rem' }}>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Patient Registry</h1>
+                <p style={{ color: 'var(--text-muted)' }}>Standardized outcomes database across all centers.</p>
+            </div>
+            <div className="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Bio Data</th>
+                            <th>Institution</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {patients.map(p => (
+                            <tr key={p.id}>
+                                <td style={{ fontWeight: 800, color: 'var(--secondary)' }}>{p.patientId}</td>
+                                <td style={{ fontSize: '0.85rem' }}>{p.age}Y • {p.sex}</td>
+                                <td>{p.centers?.name}</td>
+                                <td style={{ color: 'var(--text-muted)' }}>{new Date(p.dateAdded).toLocaleDateString()}</td>
+                                <td>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button className="btn-icon" title="Edit Patient" onClick={() => onEditPatient(p)}><IconEdit /></button>
+                                        <button className="btn-icon" title="Delete Entry" style={{ color: '#ef4444' }}><IconTrash /></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+export function DraftsPage({ currentUser, showNotification, onEditDraft }: any) {
+    return (
+        <div style={{ textAlign: 'center', padding: '5rem', background: 'white', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+            <h2 style={{ fontWeight: 800 }}>Draft Management</h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0.5rem auto 1.5rem' }}>
+                Drafts are currently saved locally to your browser to prevent data loss during long entries.
+            </p>
+            <button className="btn btn-outline" onClick={() => window.location.reload()}>Refresh Sessions</button>
         </div>
     );
 }

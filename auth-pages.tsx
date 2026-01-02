@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { LoadingSpinner } from './shared-components';
@@ -73,25 +72,25 @@ export function InvitationSignUpPage({ token, showNotification, onSignedUp }: { 
     return (
         <div className="auth-container">
             <div className="auth-form">
-                <h1>Complete Your Registration</h1>
-                {error ? <p className="error-message">{error}</p> : 
+                <h1>Complete Registration</h1>
+                {error ? <div className="error-message">{error}</div> : 
                 invitation ? (
                 <form onSubmit={handleSignUp}>
-                    <p>Welcome! Create your account to join the platform.</p>
+                    <p>Welcome! Please complete your profile details to join the NIDPO research network.</p>
                      <div className="form-group">
-                        <label>Email</label>
+                        <label>Assigned Email</label>
                         <input type="email" value={invitation.email} disabled />
                     </div>
                     <div className="form-group">
                         <label htmlFor="name">Full Name</label>
-                        <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
+                        <input id="name" type="text" placeholder="Dr. John Doe" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                        <label htmlFor="password">Create Password</label>
+                        <input id="password" type="password" placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
                     </div>
-                    <button type="submit" className="btn" disabled={loading}>
-                        {loading ? 'Signing Up...' : 'Sign Up'}
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '48px' }} disabled={loading}>
+                        {loading ? 'Creating Account...' : 'Complete Account Setup'}
                     </button>
                 </form>
                 ) : null}
@@ -144,11 +143,14 @@ export function ResetPasswordPage({ showNotification }: { showNotification: (msg
             <div className="auth-form">
                 <form onSubmit={handleUpdatePassword}>
                     <h1>Set New Password</h1>
+                    <p>Ensure your new password is secure and at least 6 characters long.</p>
                     <div className="form-group">
-                        <label htmlFor="password">New Password (minimum 6 characters)</label>
+                        <label htmlFor="password">New Password</label>
                         <input id="password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
                     </div>
-                    <button type="submit" className="btn" disabled={loading}>{loading ? 'Updating...' : 'Update Password'}</button>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '48px' }} disabled={loading}>
+                        {loading ? 'Updating...' : 'Save New Password'}
+                    </button>
                 </form>
             </div>
         </div>
@@ -203,7 +205,7 @@ export function AuthPage({ hasAdmin, onAdminCreated }: { hasAdmin: boolean, onAd
         const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${baseUrl}#/reset-password` });
         if (error) setError(error.message);
-        else setMessage('Password reset link sent! Check your email.');
+        else setMessage('Check your email for the reset link.');
         setLoading(false);
     };
 
@@ -213,16 +215,22 @@ export function AuthPage({ hasAdmin, onAdminCreated }: { hasAdmin: boolean, onAd
                 <div className="auth-form">
                     <form onSubmit={handlePasswordReset}>
                         <h1>Reset Password</h1>
-                        <p>Enter your email to receive a password reset link.</p>
+                        <p>Enter the email address associated with your research account.</p>
                         <div className="form-group">
                             <label htmlFor="email">Email Address</label>
-                            <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                            <input id="email" type="email" placeholder="name@hospital.org" value={email} onChange={e => setEmail(e.target.value)} required />
                         </div>
-                        <button type="submit" className="btn" disabled={loading}>{loading ? 'Sending...' : 'Send Reset Link'}</button>
-                        <button type="button" className="btn btn-secondary" onClick={() => setAuthMode('login')} style={{marginTop: '0.5rem'}}>Back to Login</button>
+                        <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '48px' }} disabled={loading}>
+                            {loading ? 'Sending...' : 'Send Reset Instructions'}
+                        </button>
+                        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                            <button type="button" className="btn btn-outline" onClick={() => setAuthMode('login')} style={{ border: 'none' }}>
+                                Back to Login
+                            </button>
+                        </div>
                     </form>
-                    {error && <p className="error-message">{error}</p>}
-                    {message && <p style={{color: 'green', marginTop: '1rem'}}>{message}</p>}
+                    {error && <div className="error-message">{error}</div>}
+                    {message && <div style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '1rem', borderRadius: '8px', marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600 }}>{message}</div>}
                 </div>
             </div>
         );
@@ -232,28 +240,34 @@ export function AuthPage({ hasAdmin, onAdminCreated }: { hasAdmin: boolean, onAd
         <div className="auth-container">
             <div className="auth-form">
                 <form onSubmit={authMode === 'admin_signup' ? handleAdminSignUp : handleLogin}>
-                    <h1>{authMode === 'admin_signup' ? 'Create Admin Account' : 'Welcome Back'}</h1>
-                    <p>{authMode === 'admin_signup' ? 'This is a one-time setup for the first administrator.' : 'Log in to access the research platform.'}</p>
+                    <h1>{authMode === 'admin_signup' ? 'Create Admin Account' : 'Researcher Access'}</h1>
+                    <p>{authMode === 'admin_signup' ? 'First-time setup for the Lead PI / Administrator.' : 'Secure access for NIDPO study personnel.'}</p>
                     {authMode === 'admin_signup' && (
                         <div className="form-group">
                             <label htmlFor="name">Full Name</label>
-                            <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
+                            <input id="name" type="text" placeholder="Lead Researcher Name" value={name} onChange={e => setName(e.target.value)} required />
                         </div>
                     )}
                     <div className="form-group">
-                        <label htmlFor="email">Email Address</label>
-                        <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                        <label htmlFor="email">Work Email</label>
+                        <input id="email" type="email" placeholder="name@hospital.edu.ng" value={email} onChange={e => setEmail(e.target.value)} required />
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                        <input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
                     </div>
-                    <button type="submit" className="btn" disabled={loading}>{loading ? 'Processing...' : (authMode === 'admin_signup' ? 'Create Admin' : 'Log In')}</button>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '48px', marginTop: '1rem' }} disabled={loading}>
+                        {loading ? 'Authenticating...' : (authMode === 'admin_signup' ? 'Initialize Admin Account' : 'Secure Login')}
+                    </button>
                     {authMode === 'login' && (
-                        <button type="button" onClick={() => setAuthMode('reset')} style={{background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', marginTop: '1rem', textDecoration: 'underline'}}>Forgot Password?</button>
+                        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                            <button type="button" onClick={() => setAuthMode('reset')} style={{background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none'}}>
+                                Trouble signing in?
+                            </button>
+                        </div>
                     )}
                 </form>
-                {error && <p className="error-message">{error}</p>}
+                {error && <div className="error-message">{error}</div>}
             </div>
         </div>
     );

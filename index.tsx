@@ -39,7 +39,7 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
     return (
         <div className="landing-wrapper">
             <nav className="landing-nav">
-                <div className="logo-text">NIDPO</div>
+                <div className="logo-text">DIOS</div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button className="btn btn-primary" onClick={onLoginClick}>
                         {isLoggedIn ? 'Go to Dashboard' : 'Researcher Portal'}
@@ -50,7 +50,7 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
             <header className="hero-section">
                 <h1 className="hero-title">Precision Outcomes for <br/>Metabolic Research</h1>
                 <p className="hero-subtitle">
-                    The Nigeria Inpatient Diabetes Presence & Outcomes (NIDPO) study standardizes diabetes care metrics across Nigeria's tertiary hospitals through a unified registry.
+                    DM Inpatient Outcome Study(DIOS) study standardizes diabetes care metrics at Irrua Specialist Teaching Hospital  through a unified registry.
                 </p>
                 <div className="cta-group" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                     <button className="btn btn-primary" onClick={onLoginClick}>Launch Portal</button>
@@ -89,8 +89,8 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
                     </div>
                     <div className="pi-body">
                         <p>
-                            Dr. Olugbemide leads the Nigeria Inpatient Diabetes Presence & Outcomes (NIDPO) research network. 
-                            He is a Consultant Physician/Endocrinologist at Irrua Specialist Teaching Hospital (ISTH), 
+                            Dr. Olugbemide leads the ISTH Diabetes Inpatient Outcome Study (DIOS) research network. 
+                            She is a Consultant Physician/Endocrinologist at Irrua Specialist Teaching Hospital (ISTH), 
                             dedicated to optimizing glycemic control outcomes through standardized multicenter analytics.
                         </p>
                     </div>
@@ -107,8 +107,8 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
                                 <span className="lbl">Host Site</span>
                             </div>
                             <div className="stat">
-                                <span className="val">14+</span>
-                                <span className="lbl">Research Centers</span>
+                                <span className="val">1</span>
+                                <span className="lbl">Research Center</span>
                             </div>
                         </div>
                     </div>
@@ -117,7 +117,7 @@ const LandingPage = ({ onLoginClick, isLoggedIn }: { onLoginClick: () => void, i
 
             <footer style={{ padding: '5rem 5%', borderTop: '1px solid var(--border)', textAlign: 'center', background: '#fafafa' }}>
                 <p style={{ color: 'var(--text-muted)' }}>
-                    © 2024 NIDPO Platform. Irrua Specialist Teaching Hospital Research Unit. Edo State, Nigeria.
+                    © 2025 DIOS Platform. Irrua Specialist Teaching Hospital Research Unit. Edo State, Nigeria.
                 </p>
             </footer>
         </div>
